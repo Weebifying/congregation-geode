@@ -23,6 +23,12 @@
             "default": 1,
             "min": 0,
             "max": 100
+		},
+		"drop": {
+			"name": "Jumpscare at Drop",
+			"description": "Whether you will be thrown at the beginning or the drop",
+			"type": "bool",
+			"default": true
 		}
 	}
 }

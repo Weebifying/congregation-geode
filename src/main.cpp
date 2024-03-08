@@ -16,7 +16,10 @@ class $modify(PlayLayer) {
 		auto chance = Mod::get()->getSettingValue<double>("chance");
 		if (rand()/(RAND_MAX+1.0) < chance/100) {
 			orgLevel = level;
-			level = GameLevelManager::get()->getSavedLevel(68668045);
+			int id;
+			if (Mod::get()->getSettingValue<bool>("drop")) id = 102104211;
+			else id = 68668045;
+			level = GameLevelManager::get()->getSavedLevel(id);
 			jumpscare = true;
 
 			if (orgLevel->m_levelType == GJLevelType::Local || (std::find(mainLevels, mainLevels + sizeof(mainLevels)/sizeof(mainLevels[0]), orgLevel->m_levelID.value()) != mainLevels + sizeof(mainLevels)/sizeof(mainLevels[0])))
@@ -58,6 +61,7 @@ class $modify(LevelSelectLayer) {
 
 class $modify(PauseLayer) {
 	void onQuit(CCObject* sender) {
+		PauseLayer::onQuit(sender);
 		if (jumpscare && type == 2) {
 			auto scene = CCScene::create();
 			auto layer = EditLevelLayer::create(orgLevel);
@@ -66,8 +70,6 @@ class $modify(PauseLayer) {
 
 			jumpscare = false;
 			orgLevel = nullptr;
-		} else {
-			PauseLayer::onQuit(sender);
 		}
 	}
 };
@@ -79,6 +81,7 @@ $on_mod(Loaded) {
 	auto MDM = MusicDownloadManager::sharedState();
 
 	GLM->downloadLevel(68668045, false);
+	GLM->downloadLevel(102104211, false);
 	#ifdef GEODE_IS_ANDROID
 		std::filesystem::path p = MDM->pathForSong(895761).c_str();
 		if (!std::filesystem::exists(p.parent_path() / "895761.mp3"))
