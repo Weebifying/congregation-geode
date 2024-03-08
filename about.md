@@ -1,3 +1,3 @@
-# Template Mod
+# Congregation Jumpscare
 
-Edit about.md to change this
+Randomly throws you in Congregation by Presta when you enter a level
