@@ -2,6 +2,7 @@
 #include <Geode/modify/PlayLayer.hpp>
 #include <Geode/modify/MenuLayer.hpp>
 #include <Geode/modify/LevelInfoLayer.hpp>
+#include <Geode/modify/CCScheduler.hpp>
 
 using namespace geode::prelude;
 
@@ -33,18 +34,19 @@ class $modify(LevelInfoLayer) {
 	}
 };
 
+class $modify(CCScheduler) {
+	void update(float dt) {
+		CCScheduler::update(dt);
+		log::warn("{}", MusicDownloadManager::sharedState()->pathForSong(128390));
+	}
+};
+
 $on_mod(Loaded) {
 	srand((unsigned int)time(NULL));
-	auto glm = GameLevelManager::get();
+	auto GLM = GameLevelManager::get();
+	auto MDM = MusicDownloadManager::sharedState();
 
-	GameLevelManager::get()->downloadLevel(68668045, false);
-	if (!MusicDownloadManager::sharedState()->isSongDownloaded(895761)) {
-		if (GameManager::get()->getIntGameVariable("0033")) {
-			ghc::filesystem::copy(Mod::get()->getResourcesDir() / "895761.mp3", dirs::getGameDir() / "Resources" / "895761.mp3");
-		} else {
-			ghc::filesystem::copy(Mod::get()->getResourcesDir() / "895761.mp3", dirs::getSaveDir() / "895761.mp3");
-		}
-	}
-
-	// glm->storeUserName(5807651, 540196, "Presta");
+	GLM->downloadLevel(68668045, false);
+	if (!MDM->isSongDownloaded(895761)) 
+		ghc::filesystem::copy(Mod::get()->getResourcesDir() / "895761.mp3", ghc::filesystem::path(MDM->pathForSong(895761).c_str()));
 }
