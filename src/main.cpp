@@ -11,7 +11,7 @@ bool jumpscare = false;
 class $modify(PlayLayer) {
     static PlayLayer* create(GJGameLevel* level, bool useReplay, bool dontCreateObjects) {
 		auto chance = Mod::get()->getSettingValue<double>("chance");
-		if (rand()/(RAND_MAX+1.0) > chance/100) {
+		if (rand()/(RAND_MAX+1.0) < chance/100) {
 			orgLevel = level;
 			level = GameLevelManager::get()->getSavedLevel(68668045);
 			jumpscare = true;
