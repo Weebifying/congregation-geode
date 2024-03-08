@@ -61,5 +61,6 @@ $on_mod(Loaded) {
 	if (!MDM->isSongDownloaded(895761)) 
 		ghc::filesystem::copy(Mod::get()->getResourcesDir() / "895761.mp3", ghc::filesystem::path(MDM->pathForSong(895761).c_str()));
 
-	glm->storeUserName(5807651, 540196, "Presta");
+	// specifically for level id 2004!!
+	GLM->storeUserName(5807651, 540196, "Presta");
 }
