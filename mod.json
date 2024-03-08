@@ -1,0 +1,27 @@
+{
+	"geode": "2.0.0-beta.21",
+	"gd": {
+		"win": "2.204",
+		"android": "2.205"
+	},
+	"version": "v1.0.0",
+	"id": "weebify.congregation_jumpscare",
+	"name": "Congregation Jumpscare",
+	"developer": "Weebify",
+	"description": "Congregation Jumpscare",
+	"tags": ["Gameplay"],
+	"resources": {
+		"files": [
+			"res/895761.mp3"
+		]
+	},
+	"settings": {
+		"chance": {
+            "name": "Probability (%)",
+            "type": "float",
+            "default": 1,
+            "min": 0,
+            "max": 100
+		}
+	}
+}
