@@ -16,10 +16,14 @@ class $modify(PlayLayer) {
 		auto chance = Mod::get()->getSettingValue<double>("chance");
 		if (rand()/(RAND_MAX+1.0) < chance/100) {
 			orgLevel = level;
-			int id;
-			if (Mod::get()->getSettingValue<bool>("drop")) id = 102104211;
-			else id = 68668045;
-			level = GameLevelManager::get()->getSavedLevel(id);
+			level = GameLevelManager::get()->getSavedLevel(68668045);
+			
+			if (Mod::get()->getSettingValue<bool>("drop")) {
+				std::string startPos = "1,31,2,24525,3,1605,155,3,36,1,kA2,0,kA3,0,kA8,0,kA4,1,kA9,1,kA10,0,kA22,0,kA23,0,kA24,0,kA27,1,kA40,1,kA41,1,kA42,1,kA28,0,kA29,0,kA31,1,kA32,1,kA36,0,kA43,0,kA44,0,kA45,1,kA33,1,kA34,1,kA35,0,kA37,1,kA38,1,kA39,1,kA19,0,kA26,0,kA20,0,kA21,0,kA11,0;";
+				std::string levelString = ZipUtils::decompressString(level->m_levelString, true, 0);
+				level->m_levelString = ZipUtils::compressString(levelString + startPos, true, 0);
+			}
+			
 			jumpscare = true;
 
 			if (orgLevel->m_levelType == GJLevelType::Local || (std::find(mainLevels, mainLevels + sizeof(mainLevels)/sizeof(mainLevels[0]), orgLevel->m_levelID.value()) != mainLevels + sizeof(mainLevels)/sizeof(mainLevels[0])))
@@ -81,7 +85,6 @@ $on_mod(Loaded) {
 	auto MDM = MusicDownloadManager::sharedState();
 
 	GLM->downloadLevel(68668045, false);
-	GLM->downloadLevel(102104211, false);
 	#ifdef GEODE_IS_ANDROID
 		std::filesystem::path p = MDM->pathForSong(895761).c_str();
 		if (!std::filesystem::exists(p.parent_path() / "895761.mp3"))
