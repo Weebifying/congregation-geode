@@ -22,16 +22,14 @@ class $modify(PlayLayer) {
 			orgLevel = level;
 			level = GameLevelManager::get()->getSavedLevel(68668045);
 
-			if (orgLevelString.compare("")) {
-				log::warn("not equal");
+			if (orgLevelString.compare("")) 
 				level->m_levelString = orgLevelString;
-			}
+			
 			
 			if (Mod::get()->getSettingValue<bool>("drop")) {
 				if (!orgLevelString.compare("")) {
-					log::warn("equal");
 					orgLevelString = level->m_levelString;
-				}
+				
 				std::string levelString = ZipUtils::decompressString(level->m_levelString, true, 0);
 				// add a startpos at the drop of the level
 				level->m_levelString = ZipUtils::compressString(levelString + startPos, true, 0);
