@@ -71,9 +71,25 @@ class $modify(LevelSelectLayer) {
 };
 
 class $modify(EditorPauseLayer) {
-	void onExitEditor(CCObject* sender) {
-		EditorPauseLayer::onExitEditor(sender);
-		// for exiting to the original level's EditLevelLayer from the editor's pause menu
+	// for exiting to the original level's EditLevelLayer from the editor's pause menu
+	void onSaveAndExit(CCObject* sender) {
+		EditorPauseLayer::onSaveAndExit(sender);
+		if (jumpscare) {
+			if (type == 2) {
+				auto scene = CCScene::create();
+				auto layer = EditLevelLayer::create(orgLevel);
+				scene->addChild(layer);
+				CCDirector::get()->replaceScene(scene);
+
+				orgLevel = nullptr;
+			}
+
+			jumpscare = false;
+		}
+	}
+
+	void FLAlert_Clicked(FLAlertLayer* p0, bool p1) {
+		EditorPauseLayer::FLAlert_Clicked(p0, p1);
 		if (jumpscare) {
 			if (type == 2) {
 				auto scene = CCScene::create();
