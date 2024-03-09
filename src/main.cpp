@@ -8,7 +8,7 @@
 using namespace geode::prelude;
 
 GJGameLevel* orgLevel = nullptr;
-std::string orgLevelString;
+std::string orgLevelString; // for the original Congregation level's string without the startpos
 bool jumpscare = false;
 int type = 0; // 1: main level, 2: editor level, 3: online level
 int mainLevels[] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,1001,1002,1003,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,3001,4001,4002,4003,5001,5002,5003,5004};
@@ -25,6 +25,7 @@ class $modify(PlayLayer) {
 			if (Mod::get()->getSettingValue<bool>("drop")) {
 				orgLevelString = level->m_levelString;
 				std::string levelString = ZipUtils::decompressString(level->m_levelString, true, 0);
+				// add a startpos at the drop of the level
 				level->m_levelString = ZipUtils::compressString(levelString + startPos, true, 0);
 			}
 			
@@ -45,6 +46,7 @@ class $modify(PlayLayer) {
 class $modify(LevelInfoLayer) {
 	bool init(GJGameLevel* p0, bool p1) {
 		if (jumpscare && type == 3) {
+			// for exiting to the original level's LevelInfoLayer
 			p0 = orgLevel;
 
 			jumpscare = false;
@@ -58,6 +60,7 @@ class $modify(LevelInfoLayer) {
 class $modify(LevelSelectLayer) {
 	bool init(int p0) {
 		if (jumpscare && type == 1) {
+			// for exiting to the original main level's LevelSelectLayer
 			p0 = orgLevel->m_levelID.value() - 1;
 
 			jumpscare = false;
@@ -70,6 +73,7 @@ class $modify(LevelSelectLayer) {
 class $modify(EditorPauseLayer) {
 	void onExitEditor(CCObject* sender) {
 		EditorPauseLayer::onExitEditor(sender);
+		// for exiting to the original level's EditLevelLayer from the editor's pause menu
 		if (jumpscare) {
 			if (type == 2) {
 				auto scene = CCScene::create();
@@ -100,6 +104,7 @@ class $modify(PauseLayer) {
 				GameLevelManager::get()->getSavedLevel(68668045)->m_levelString = orgLevelString;
 
 			if (type == 2) {
+				// for exiting to the original level's EditLevelLayer from the pause menu
 				auto scene = CCScene::create();
 				auto layer = EditLevelLayer::create(orgLevel);
 				scene->addChild(layer);
