@@ -21,9 +21,17 @@ class $modify(PlayLayer) {
 		if (rand()/(RAND_MAX+1.0) < chance/100) {
 			orgLevel = level;
 			level = GameLevelManager::get()->getSavedLevel(68668045);
+
+			if (orgLevelString.compare("")) {
+				log::warn("not equal");
+				level->m_levelString = orgLevelString;
+			}
 			
 			if (Mod::get()->getSettingValue<bool>("drop")) {
-				orgLevelString = level->m_levelString;
+				if (!orgLevelString.compare("")) {
+					log::warn("equal");
+					orgLevelString = level->m_levelString;
+				}
 				std::string levelString = ZipUtils::decompressString(level->m_levelString, true, 0);
 				// add a startpos at the drop of the level
 				level->m_levelString = ZipUtils::compressString(levelString + startPos, true, 0);
@@ -44,21 +52,20 @@ class $modify(PlayLayer) {
 };
 
 class $modify(LevelInfoLayer) {
-	bool init(GJGameLevel* p0, bool p1) {
+	static LevelInfoLayer* create(GJGameLevel* level, bool p1) {
 		if (jumpscare && type == 3) {
 			// for exiting to the original level's LevelInfoLayer
-			p0 = orgLevel;
+			level = orgLevel;
 
 			jumpscare = false;
 			orgLevel = nullptr;
 		}
-
-		return LevelInfoLayer::init(p0, p1);
+		return LevelInfoLayer::create(level, p1);
 	}
 };
 
 class $modify(LevelSelectLayer) {
-	bool init(int p0) {
+	static LevelSelectLayer* create(int p0) {
 		if (jumpscare && type == 1) {
 			// for exiting to the original main level's LevelSelectLayer
 			p0 = orgLevel->m_levelID.value() - 1;
@@ -66,7 +73,7 @@ class $modify(LevelSelectLayer) {
 			jumpscare = false;
 			orgLevel = nullptr;
 		}
-		return LevelSelectLayer::init(p0);
+		return LevelSelectLayer::create(p0);
 	}
 };
 
@@ -106,19 +113,9 @@ class $modify(EditorPauseLayer) {
 };
 
 class $modify(PauseLayer) {
-	void onEdit(CCObject* sender) {
-		PauseLayer::onEdit(sender);
-		if (jumpscare) {
-			if (Mod::get()->getSettingValue<bool>("drop")) 
-				GameLevelManager::get()->getSavedLevel(68668045)->m_levelString = orgLevelString;
-		}
-	}
 	void onQuit(CCObject* sender) {
 		PauseLayer::onQuit(sender);
 		if (jumpscare) {
-			if (Mod::get()->getSettingValue<bool>("drop")) 
-				GameLevelManager::get()->getSavedLevel(68668045)->m_levelString = orgLevelString;
-
 			if (type == 2) {
 				// for exiting to the original level's EditLevelLayer from the pause menu
 				auto scene = CCScene::create();
@@ -130,7 +127,6 @@ class $modify(PauseLayer) {
 			}
 			jumpscare = false;
 		}
-
 	}
 };
 
