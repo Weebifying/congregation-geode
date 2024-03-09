@@ -27,7 +27,7 @@ class $modify(PlayLayer) {
 			
 			
 			if (Mod::get()->getSettingValue<bool>("drop")) {
-				if (!orgLevelString.compare("")) {
+				if (!orgLevelString.compare("")) 
 					orgLevelString = level->m_levelString;
 				
 				std::string levelString = ZipUtils::decompressString(level->m_levelString, true, 0);
