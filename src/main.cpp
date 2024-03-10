@@ -64,8 +64,6 @@ class $modify(LevelInfoLayer) {
 
 class $modify(LevelSelectLayer) {
 	bool init(int p0) {
-		log::warn("type = {}", type);
-		log::warn("jumpscare = {}", jumpscare);
 		if (jumpscare && type == 1) {
 			// for exiting to the original main level's LevelSelectLayer
 			p0 = orgLevel->m_levelID.value() - 1;
