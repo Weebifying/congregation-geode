@@ -63,7 +63,7 @@ class $modify(LevelInfoLayer) {
 };
 
 class $modify(LevelSelectLayer) {
-	static LevelSelectLayer* create(int p0) {
+	bool init(int p0) {
 		log::warn("type = {}", type);
 		log::warn("jumpscare = {}", jumpscare);
 		if (jumpscare && type == 1) {
@@ -73,7 +73,7 @@ class $modify(LevelSelectLayer) {
 			jumpscare = false;
 			orgLevel = nullptr;
 		}
-		return LevelSelectLayer::create(p0);
+		return LevelSelectLayer::init(p0);
 	}
 };
 
