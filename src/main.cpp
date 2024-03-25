@@ -106,6 +106,7 @@ class $modify(PlayLayer) {
 				if (child->getZOrder() == 10 && typeinfo_cast<CCSprite*>(child)) child->setVisible(false); // progress bar
 				if (child->getZOrder() == 15 && typeinfo_cast<CCLabelBMFont*>(child)) child->setVisible(false); // percentage label
 				if (child->getZOrder() == 1000 && child->getChildrenCount() == 8) child->setVisible(false); // testmode text on mac
+				// if (child->getZOrder() == 1000) child->setVisible(false); // testmode text & all crystal clients nodes
 			}
 
 			// hide attempt count
