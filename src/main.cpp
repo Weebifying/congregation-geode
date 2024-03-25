@@ -16,6 +16,10 @@ std::string startPos = "1,31,2,24525,3,1605,155,3,36,1,kA2,0,kA3,0,kA8,0,kA4,1,k
 
 
 class $modify(PlayLayer) {
+	static void onModify(auto& self) {
+        self.setHookPriority("PlayLayer::init", INT_MIN);
+    }
+
     bool init(GJGameLevel* level, bool useReplay, bool dontCreateObjects) {
 		auto chance = Mod::get()->getSettingValue<double>("chance");
 		if (rand()/(RAND_MAX+1.0) < chance/100) {
@@ -44,9 +48,78 @@ class $modify(PlayLayer) {
 			else 
 				type = 3;
 		}
+		
+        if (!PlayLayer::init(level, useReplay, dontCreateObjects)) return false;
 
-        return PlayLayer::init(level, useReplay, dontCreateObjects);
+		if (Mod::get()->getSettingValue<bool>("hide") && jumpscare) {
+			if (Loader::get()->isModLoaded("prevter.openhack")) {
+				this->getChildByID("openhack-startpos-label")->setVisible(false);
+			}
+
+			if (Loader::get()->isModLoaded("TheSillyDoggo.StartposSwitcher")) {
+				CCArrayExt<CCNode*> uiChildren = this->getChildByID("UILayer")->getChildren();
+				for (auto* child : uiChildren) {
+					if (child->getChildrenCount() == 3 && child->getZOrder() == 0 && child->getID() == "") {
+						child->setVisible(false);
+					}
+					if (Loader::get()->isModLoaded("absolllute.megahack")) {
+						if ((child->getChildrenCount() == 21 || child->getChildrenCount() == 19) && child->getTag() == 4326 && child->getZOrder() == 99) {
+							// 21 is (hopefully) percentage, 19 is testmode
+							child->setVisible(false);
+
+						}
+					}
+				}
+			}
+
+			if (Loader::get()->isModLoaded("mat.run-info")) {
+				CCArrayExt<CCNode*> plChildren = this->getChildren();
+				for (auto* child : plChildren) {
+					if (child->getChildrenCount() == 3 && child->getZOrder() == 999) {
+						child->setVisible(false); // run info widget
+					}	
+				}
+			}
+
+			if (Loader::get()->isModLoaded("absolllute.megahack")) {
+				// LOL
+				this->getChildByID("UILayer")->getChildByID("absolllute.megahack/startpos-switcher-menu")->setPositionX(9999);
+			}
+		}
+
+		return true;
     }
+
+	void setupHasCompleted() {
+		PlayLayer::setupHasCompleted();
+
+		if (Mod::get()->getSettingValue<bool>("hide") && jumpscare) {
+			CCArrayExt<CCNode*> plChildren = this->getChildren();
+			CCNode* mainNode = nullptr;
+			for (auto* child : plChildren) {
+				if (Loader::get()->isModLoaded("mat.run-info")) {
+					if (child->getChildrenCount() == 3 && child->getZOrder() == 999) {
+						child->setVisible(false); // run info widget
+					}
+				}
+				if (child->getZOrder() == -1) mainNode = child;
+				if (child->getZOrder() == 10 && typeinfo_cast<CCSprite*>(child)) child->setVisible(false); // progress bar
+				if (child->getZOrder() == 15 && typeinfo_cast<CCLabelBMFont*>(child)) child->setVisible(false); // percentage label
+				if (child->getZOrder() == 1000 && child->getChildrenCount() == 8) child->setVisible(false); // testmode text on mac
+			}
+
+			// hide attempt count
+			CCArrayExt<CCNode*> mainChildren = mainNode->getChildren();
+			for (auto* child : mainChildren) {
+				if (typeinfo_cast<CCLayer*>(child)) {
+					if (typeinfo_cast<GJGroundLayer*>(child)) continue;
+					else {
+						if (auto a = getChildOfType<CCLabelBMFont>(child, 0)) a->setVisible(false);
+					}
+				}
+			}
+		}
+	}
 };
 
 class $modify(LevelInfoLayer) {
