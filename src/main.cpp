@@ -53,7 +53,7 @@ class $modify(PlayLayer) {
 
 		if (Mod::get()->getSettingValue<bool>("hide") && jumpscare) {
 			if (Loader::get()->isModLoaded("prevter.openhack")) {
-				this->getChildByID("openhack-startpos-label")->setVisible(false);
+				if (auto a = this->getChildByID("openhack-startpos-label")) a->setVisible(false);
 			}
 
 			if (Loader::get()->isModLoaded("TheSillyDoggo.StartposSwitcher")) {
@@ -83,7 +83,7 @@ class $modify(PlayLayer) {
 
 			if (Loader::get()->isModLoaded("absolllute.megahack")) {
 				// LOL
-				this->getChildByID("UILayer")->getChildByID("absolllute.megahack/startpos-switcher-menu")->setPositionX(9999);
+				if (auto a = this->getChildByID("UILayer")->getChildByID("absolllute.megahack/startpos-switcher-menu")) a->setPositionX(9999);
 			}
 		}
 
