@@ -10,7 +10,7 @@
 	"name": "Congregation Jumpscare",
 	"developer": "Weebify",
 	"description": "Congregation Jumpscare",
-	"tags": ["Gameplay"],
+	"tags": ["gameplay", "joke"],
 	"resources": {
 		"files": [
 			"res/895761.mp3"
