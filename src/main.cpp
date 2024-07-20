@@ -5,6 +5,8 @@
 #include <Geode/modify/LevelSelectLayer.hpp>
 #include <Geode/modify/PauseLayer.hpp>
 
+#include <random>
+
 using namespace geode::prelude;
 
 GJGameLevel* orgLevel = nullptr;
@@ -22,31 +24,41 @@ class $modify(PlayLayer) {
 
     bool init(GJGameLevel* level, bool useReplay, bool dontCreateObjects) {
 		auto chance = Mod::get()->getSettingValue<double>("chance");
-		if (rand()/(RAND_MAX+1.0) < chance/100) {
+
+		std::random_device rd;
+		std::mt19937 gen(rd());
+		std::uniform_real_distribution<float> distrib(0.f, 100.f);
+		
+		if (distrib(gen) < chance) {
 			orgLevel = level;
 			level = GameLevelManager::get()->getSavedLevel(68668045);
-
-			if (orgLevelString.compare("")) 
-				level->m_levelString = orgLevelString;
-			
-			
-			if (Mod::get()->getSettingValue<bool>("drop")) {
-				if (!orgLevelString.compare("")) 
-					orgLevelString = level->m_levelString;
+			if (level->m_levelNotDownloaded) {
+				level = orgLevel;
+				GameLevelManager::get()->downloadLevel(68668045, false);
+				jumpscare = false;
+			} else {
+				if (orgLevelString.compare("")) 
+					level->m_levelString = orgLevelString;
 				
-				std::string levelString = ZipUtils::decompressString(level->m_levelString, true, 0);
-				// add a startpos at the drop of the level
-				level->m_levelString = ZipUtils::compressString(levelString + startPos, true, 0);
-			}
-			
-			jumpscare = true;
+				if (Mod::get()->getSettingValue<bool>("drop")) {
+					if (!orgLevelString.compare("")) 
+						orgLevelString = level->m_levelString;
+					
+					std::string levelString = ZipUtils::decompressString(level->m_levelString, true, 0);
+					// add a startpos at the drop of the level
+					level->m_levelString = ZipUtils::compressString(levelString + startPos, true, 0);
+				}
+				
+				jumpscare = true;
 
-			if (orgLevel->m_levelType == GJLevelType::Local || (std::find(mainLevels, mainLevels + sizeof(mainLevels)/sizeof(mainLevels[0]), orgLevel->m_levelID.value()) != mainLevels + sizeof(mainLevels)/sizeof(mainLevels[0])))
-				type = 1;
-			else if (orgLevel->m_levelType == GJLevelType::Editor)
-				type = 2;
-			else 
-				type = 3;
+				if (orgLevel->m_levelType == GJLevelType::Local || (std::find(mainLevels, mainLevels + sizeof(mainLevels)/sizeof(mainLevels[0]), orgLevel->m_levelID.value()) != mainLevels + sizeof(mainLevels)/sizeof(mainLevels[0])))
+					type = 1;
+				else if (orgLevel->m_levelType == GJLevelType::Editor)
+					type = 2;
+				else 
+					type = 3;
+			}
+
 		}
 		
         if (!PlayLayer::init(level, useReplay, dontCreateObjects)) return false;
@@ -57,7 +69,7 @@ class $modify(PlayLayer) {
 			}
 
 			if (Loader::get()->isModLoaded("TheSillyDoggo.StartposSwitcher")) {
-				CCArrayExt<CCNode*> uiChildren = this->getChildByID("UILayer")->getChildren();
+				CCArrayExt<CCNode*> uiChildren = getChildOfType<UILayer>(this, 0)->getChildren();
 				for (auto* child : uiChildren) {
 					if (child->getChildrenCount() == 3 && child->getZOrder() == 0 && child->getID() == "") {
 						child->setVisible(false);
@@ -83,7 +95,7 @@ class $modify(PlayLayer) {
 
 			if (Loader::get()->isModLoaded("absolllute.megahack")) {
 				// LOL
-				if (auto a = this->getChildByID("UILayer")->getChildByID("absolllute.megahack/startpos-switcher-menu")) a->setPositionX(9999);
+				if (auto a = getChildOfType<UILayer>(this, 0)->getChildByID("absolllute.megahack/startpos-switcher-menu")) a->setPositionX(9999);
 			}
 		}
 
@@ -155,9 +167,7 @@ class $modify(EditorPauseLayer) {
 		EditorPauseLayer::onSaveAndExit(sender);
 		if (jumpscare) {
 			if (type == 2) {
-				auto scene = CCScene::create();
-				auto layer = EditLevelLayer::create(orgLevel);
-				scene->addChild(layer);
+				auto scene = EditLevelLayer::scene(orgLevel);
 				CCDirector::get()->replaceScene(scene);
 
 				orgLevel = nullptr;
@@ -171,9 +181,7 @@ class $modify(EditorPauseLayer) {
 		EditorPauseLayer::FLAlert_Clicked(p0, p1);
 		if (jumpscare) {
 			if (type == 2) {
-				auto scene = CCScene::create();
-				auto layer = EditLevelLayer::create(orgLevel);
-				scene->addChild(layer);
+				auto scene = EditLevelLayer::scene(orgLevel);
 				CCDirector::get()->replaceScene(scene);
 
 				orgLevel = nullptr;
@@ -190,9 +198,7 @@ class $modify(PauseLayer) {
 		if (jumpscare) {
 			if (type == 2) {
 				// for exiting to the original level's EditLevelLayer from the pause menu
-				auto scene = CCScene::create();
-				auto layer = EditLevelLayer::create(orgLevel);
-				scene->addChild(layer);
+				auto scene = EditLevelLayer::scene(orgLevel);
 				CCDirector::get()->replaceScene(scene);
 
 				orgLevel = nullptr;
@@ -204,7 +210,6 @@ class $modify(PauseLayer) {
 
 
 $on_mod(Loaded) {
-	srand((unsigned int)time(NULL));
 	auto GLM = GameLevelManager::get();
 	auto MDM = MusicDownloadManager::sharedState();
 
@@ -212,10 +217,10 @@ $on_mod(Loaded) {
 	#ifdef GEODE_IS_ANDROID
 		std::filesystem::path p = MDM->pathForSong(895761).c_str();
 		if (!std::filesystem::exists(p.parent_path() / "895761.mp3"))
-			std::filesystem::copy(std::filesystem::path(Mod::get()->getResourcesDir() / "895761.mp3"), p.parent_path() / "895761.mp3");
+			std::filesystem::copy(Mod::get()->getResourcesDir() / "895761.mp3", p.parent_path() / "895761.mp3");
 	#else
 		if (!MDM->isSongDownloaded(895761)) 
-			std::filesystem::copy(std::filesystem::path(Mod::get()->getResourcesDir() / "895761.mp3"), std::filesystem::path(MDM->pathForSong(895761).c_str()));
+			std::filesystem::copy(Mod::get()->getResourcesDir() / "895761.mp3", std::filesystem::path(MDM->pathForSong(895761).c_str()));
 	#endif
 
 	// specifically for level id 2004!!

@@ -1,11 +1,11 @@
 {
-	"geode": "2.0.0-beta.23",
+	"geode": "3.2.0",
 	"gd": {
-		"win": "2.204",
-		"android": "2.205",
-		"mac": "2.200"
+		"win": "2.206",
+		"android": "2.206",
+		"mac": "2.206"
 	},
-	"version": "v1.0.2",
+	"version": "v1.0.3",
 	"id": "weebify.congregation_jumpscare",
 	"name": "Congregation Jumpscare",
 	"developer": "Weebify",
@@ -16,13 +16,6 @@
 			"res/895761.mp3"
 		]
 	},
-	"dependencies": [
-		{
-			"id": "geode.node-ids",
-			"version": ">=1.8.0",
-			"importance": "required"
-		}
-	],
 	"settings": {
 		"chance": {
             "name": "Probability (%)",
