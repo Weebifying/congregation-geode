@@ -57,8 +57,13 @@ class $modify(PlayLayer) {
 					type = 2;
 				else 
 					type = 3;
-			}
 
+				if (orgLevel->m_levelID.value() == 68668045) {
+					level->m_levelString = orgLevelString;
+					level = orgLevel;
+					jumpscare = false;
+				}
+			}
 		}
 		
         if (!PlayLayer::init(level, useReplay, dontCreateObjects)) return false;
