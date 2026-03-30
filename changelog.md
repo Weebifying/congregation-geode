@@ -1,4 +1,6 @@
 # Congregation Jumpscare Changelog
+## v1.0.5
+- Updated for GD 2.2081 (Geode 5.4.0)
 ## v1.0.4
 - Fixed playing the actual Congregation level sending you to the drop if the Jumpscare at Drop setting is enabled
 ## v1.0.3

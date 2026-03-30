@@ -16,11 +16,55 @@ int type = 0; // 1: main level, 2: editor level, 3: online level
 int mainLevels[] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,1001,1002,1003,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,3001,4001,4002,4003,5001,5002,5003,5004};
 std::string startPos = "1,31,2,24525,3,1605,155,3,36,1,kA2,0,kA3,0,kA8,0,kA4,1,kA9,1,kA10,0,kA22,0,kA23,0,kA24,0,kA27,1,kA40,1,kA41,1,kA42,1,kA28,0,kA29,0,kA31,1,kA32,1,kA36,0,kA43,0,kA44,0,kA45,1,kA33,1,kA34,1,kA35,0,kA37,1,kA38,1,kA39,1,kA19,0,kA26,0,kA20,0,kA21,0,kA11,0;";
 
+class StartposSwitcherUI final : public CCNode {}; // dummy class declaration for getting child by type --raydeeux
 
-class $modify(PlayLayer) {
+// why the #%$& does this british $&^*#&^*$_+ NOT CALL SETID() WHY THE %&^@ // GOD $^*@%#*@ *@^# IT ABSOLUTe --raydeeux
+namespace mega::hacks::startpos_switcher {
+	class Interface final : public CCNode {}; // dummy class declaration for getting child by type --raydeeux
+}
+
+class $modify(MyPlayLayer, PlayLayer) {
 	static void onModify(auto& self) {
-        self.setHookPriority("PlayLayer::init", INT_MIN);
+        self.setHookPriority("PlayLayer::init", -3999); // INT_MIN is frowned upon by alk now --raydeeux
     }
+
+	void hideStartPositionSwitchersAndSuch() {
+		if (!this->m_uiLayer) return;
+
+		if (auto foo = this->m_uiLayer->querySelector("eclipse.eclipse-menu/eclipse-ui > eclipse.eclipse-menu/startpos-switcher"); foo) {
+			foo->setVisible(false);
+		}
+
+		if (auto bar = this->m_uiLayer->getChildByID("capeling.startpos_switcher/menu"); bar) {
+			bar->setVisible(false);
+		}
+
+		if (auto baz = this->m_uiLayer->getChildByType<StartposSwitcherUI>(0); baz) {
+			baz->setPositionY(9999);
+		}
+
+		if (auto fooBar = this->m_uiLayer->getChildByType<mega::hacks::startpos_switcher::Interface>(0); fooBar) {
+			fooBar->setPositionX(9999);
+		}
+
+		if (auto fooBarBaz = this->m_uiLayer->getChildByID("mat.run-info/RunInfoWidget"); fooBarBaz) {
+			fooBarBaz->setVisible(false);
+		}
+
+		if (this->m_infoLabel) this->m_infoLabel->setVisible(false);
+		if (this->m_statusLabel) this->m_statusLabel->setVisible(false);
+		if (this->m_progressBar) this->m_progressBar->setVisible(false);
+		if (this->m_progressFill) this->m_progressFill->setVisible(false);
+		if (this->m_percentageLabel) this->m_percentageLabel->setVisible(false);
+
+		if (this->m_attemptLabel) {
+			this->m_attemptLabel->setVisible(false);
+			if (this->m_attemptLabel->getParent() && this->m_attemptLabel->getParent()->getChildByID("raydeeux.attemptlabeltweaks/custom-attempt-label")) {
+				this->m_attemptLabel->getParent()->getChildByID("raydeeux.attemptlabeltweaks/custom-attempt-label")->setSkewX(90.f); // invisibility illusion --raydeeux
+				this->m_attemptLabel->getParent()->getChildByID("raydeeux.attemptlabeltweaks/custom-attempt-label")->setRotationX(90.f); // more invisibility illusion --raydeeux
+			}
+		}
+	}
 
     bool init(GJGameLevel* level, bool useReplay, bool dontCreateObjects) {
 		auto chance = Mod::get()->getSettingValue<double>("chance");
@@ -34,14 +78,14 @@ class $modify(PlayLayer) {
 			level = GameLevelManager::get()->getSavedLevel(68668045);
 			if (level->m_levelNotDownloaded) {
 				level = orgLevel;
-				GameLevelManager::get()->downloadLevel(68668045, false);
+				GameLevelManager::get()->downloadLevel(68668045, false, 0);
 				jumpscare = false;
-			} else {
-				if (orgLevelString.compare("")) 
+			} else if (level) {
+				if (!orgLevelString.empty()) 
 					level->m_levelString = orgLevelString;
 				
 				if (Mod::get()->getSettingValue<bool>("drop")) {
-					if (!orgLevelString.compare("")) 
+					if (orgLevelString.empty()) 
 						orgLevelString = level->m_levelString;
 					
 					std::string levelString = ZipUtils::decompressString(level->m_levelString, true, 0);
@@ -51,7 +95,7 @@ class $modify(PlayLayer) {
 				
 				jumpscare = true;
 
-				if (orgLevel->m_levelType == GJLevelType::Local || (std::find(mainLevels, mainLevels + sizeof(mainLevels)/sizeof(mainLevels[0]), orgLevel->m_levelID.value()) != mainLevels + sizeof(mainLevels)/sizeof(mainLevels[0])))
+				if (orgLevel->m_levelType == GJLevelType::Main || (std::find(mainLevels, mainLevels + sizeof(mainLevels)/sizeof(mainLevels[0]), orgLevel->m_levelID.value()) != mainLevels + sizeof(mainLevels)/sizeof(mainLevels[0])))
 					type = 1;
 				else if (orgLevel->m_levelType == GJLevelType::Editor)
 					type = 2;
@@ -63,12 +107,16 @@ class $modify(PlayLayer) {
 					level = orgLevel;
 					jumpscare = false;
 				}
+			} else {
+				jumpscare = false;
 			}
 		}
 		
         if (!PlayLayer::init(level, useReplay, dontCreateObjects)) return false;
 
-		if (Mod::get()->getSettingValue<bool>("hide") && jumpscare) {
+		if (Mod::get()->getSettingValue<bool>("hide") && jumpscare && m_uiLayer) {
+			MyPlayLayer::hideStartPositionSwitchersAndSuch();
+			/*
 			if (Loader::get()->isModLoaded("prevter.openhack")) {
 				if (auto a = this->getChildByID("openhack-startpos-label")) a->setVisible(false);
 			}
@@ -102,6 +150,7 @@ class $modify(PlayLayer) {
 				// LOL
 				if (auto a = getChildOfType<UILayer>(this, 0)->getChildByID("absolllute.megahack/startpos-switcher-menu")) a->setPositionX(9999);
 			}
+			*/
 		}
 
 		return true;
@@ -110,7 +159,19 @@ class $modify(PlayLayer) {
 	void setupHasCompleted() {
 		PlayLayer::setupHasCompleted();
 
+		// qolmod is a bit silly: https://github.com/TheSillyDoggo/GeodeMenu/tree/main/src/Hacks/Level/StartposSwitcher.cpp#L113-L145 --raydeeux
+		// normally this would be a bit weak to find the furthest placed startpos object, but it's a classic extreme demon from 2.1 and the only startpos is the one that was manually added via level string, so it's fine --raydeeux
+		if (jumpscare && Mod::get()->getSettingValue<bool>("drop")) {
+			for (GameObject* object : CCArrayExt<GameObject*>(m_objects)) {
+				if (!object || object->m_objectID != 31) continue;
+				PlayLayer::setStartPosObject(static_cast<StartPosObject*>(object));
+				PlayLayer::resetLevel();
+				break;
+			}
+		}
+
 		if (Mod::get()->getSettingValue<bool>("hide") && jumpscare) {
+			/*
 			CCArrayExt<CCNode*> plChildren = this->getChildren();
 			CCNode* mainNode = nullptr;
 			for (auto* child : plChildren) {
@@ -136,6 +197,8 @@ class $modify(PlayLayer) {
 					}
 				}
 			}
+			*/
+			MyPlayLayer::hideStartPositionSwitchersAndSuch();
 		}
 	}
 };
@@ -218,7 +281,7 @@ $on_mod(Loaded) {
 	auto GLM = GameLevelManager::get();
 	auto MDM = MusicDownloadManager::sharedState();
 
-	GLM->downloadLevel(68668045, false);
+	GLM->downloadLevel(68668045, false, 0);
 	#ifdef GEODE_IS_ANDROID
 		std::filesystem::path p = MDM->pathForSong(895761).c_str();
 		if (!std::filesystem::exists(p.parent_path() / "895761.mp3"))
